@@ -6,11 +6,13 @@ class Account:
         owner (int): Customer number of the person who owns the account
         acct_number (int): Account number
         type (str): Account type - either 'savings' or 'checking'
-        balance (num): Balance in the account. Not allowed to go negative
-        interest_rate (num): Interest rate on the account. Cannot be zero for a savings account
+        balance (num): Balance in the account
+        interest_rate (num): Interest rate on the account, in percent. Cannot be zero for a savings account
 
     Methods:
-        deposit: 
+        deposit: Add an amount to the balance
+        withdraw: Deduct an amount from the balance. Balance cannot go negative
+        pay_interest: Apply interest to the balance
     """
     def __init__(self, owner, acct_number, acct_type, interest_rate = 0):
         """
@@ -33,7 +35,7 @@ class Account:
         self.acct_number = acct_number
         self.type = acct_type.lower()
         self._balance = 0
-        self.interest_rate = interest_rate
+        self._interest_rate = interest_rate
 
     @property
     def balance(self):
@@ -63,7 +65,7 @@ class Account:
             amount(num): the amount to withdraw
 
         Returns:
-            the account balance after the deposit
+            the account balance after the withdrawal
         
         Raises:
             ValueError: balance would be negative
@@ -71,4 +73,15 @@ class Account:
         if amount > self._balance:
             raise ValueError("Insufficient funds to make this withdrawal")
         self._balance -= amount
+        return self._balance
+
+    def pay_interest(self):
+        """
+        Applies interest to the account.
+
+        Returns:
+            the account balance after applying interest
+        """
+        multiplier = 1 + self._interest_rate / 100.0
+        self._balance *= multiplier
         return self._balance
