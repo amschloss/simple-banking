@@ -39,10 +39,13 @@ class Account:
 
     @property
     def balance(self):
-        """
-        Returns the balance on this account. 
-        """
+        """Balance in this account"""
         return self._balance
+
+    @property
+    def interest_rate(self):
+        """Interest rate on the account, in percent"""
+        return self._interest_rate
     
     def deposit(self, amount):
         """
@@ -85,3 +88,4 @@ class Account:
         multiplier = 1 + self._interest_rate / 100.0
         self._balance *= multiplier
         return self._balance
+        
