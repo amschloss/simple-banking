@@ -44,7 +44,7 @@ class Account:
 
     @property
     def interest_rate(self):
-        """Interest rate on the account, in percent"""
+        """Annual interest rate on the account, in percent"""
         return self._interest_rate
     
     def deposit(self, amount):
@@ -80,12 +80,12 @@ class Account:
 
     def pay_interest(self):
         """
-        Applies interest to the account.
+        Applies monthly interest to the account. The rate is the annual rate / 12
 
         Returns:
             the account balance after applying interest
         """
-        multiplier = 1 + self._interest_rate / 100.0
+        multiplier = 1 + self._interest_rate / 1200.0
         self._balance *= multiplier
         return self._balance
         

@@ -10,7 +10,7 @@ class Service:
         acct_number (int): Account number
         open_date (date): The date on which the service was opened
         balance (num): Balance on the service
-        interest_rate (num): Interest rate on the account, in percent
+        interest_rate (num): Annual interest rate on the account, in percent
 
     Methods:
         make_payment: Make a payment on the service
@@ -34,7 +34,7 @@ class Service:
     
     @property
     def interest_rate(self):
-        """Interest rate on the account, in percent"""
+        """Annual interest rate on the account, in percent"""
         return self._interest_rate
     
     @property
@@ -73,14 +73,14 @@ class CreditCard(Service):
         acct_number (int): Card number
         open_date (date): The date on which the card was opened
         balance (num): Balance on the card
-        interest_rate (num): Interest rate on the card, in percent
+        interest_rate (num): Annual interest rate on the card, in percent
         credit_limit (num): The maximum balance this card can have
         cash_advance_limit (num): The maximum amount of cash this card can advance to its owner
         minimum_payment (num): The minimum monthly payment that must be made on this card
         expiration_date (date): The date on which this card expires
 
     Methods:
-        make_payment: Make a payment on the service (inherited)
+        make_payment: Make a payment on the card (inherited)
         charge: Charge an amount to the card
         advance_cash: Pay out a cash advance against the card
     """
@@ -138,12 +138,28 @@ class CreditCard(Service):
 
     def charge_interest(self):
         """
-        Applies interest to the CreditCard
+        Applies interest to the CreditCard. The rate is the annual rate / 12
 
         Returns:
             the card balance after applying interest
         """
-        multiplier = 1 + self._interest_rate / 100.0
+        multiplier = 1 + self._interest_rate / 1200.0
         self._balance *= multiplier
         return self._balance
         
+class Loan(Service):
+    """
+    Loan extends Service
+    
+    Attributes:
+        owner (int): Customer number of the person who opened the loan
+        acct_number (int): Loan number
+        open_date (date): The date on which the loan was opened
+        balance (num): Balance on the loan
+        interest_rate (num): Annual interest rate on the loan, in percent
+        maturity_date(num): The date the loan matures
+
+    Methods:
+        make_payment: Make a payment on the loan (overridden)
+        calculate_amortization: Determine the monthly payment
+    """
