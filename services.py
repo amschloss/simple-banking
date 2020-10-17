@@ -15,7 +15,18 @@ class Service:
     Methods:
         make_payment: Make a payment on the service
     """
+
     def __init__(self, owner, acct_number, balance, interest_rate, open_date = date.today()):
+        """
+        Creates a new Service.
+
+        Attributes:
+        owner (int): Customer number of the person who opened the service
+        acct_number (int): Account number
+        open_date (date): The date on which the service was opened
+        balance (num): Balance on the service
+        interest_rate (num): Annual interest rate on the account, in percent
+        """
         self.owner = owner
         self._acct_number = acct_number
         self._balance = balance
@@ -63,6 +74,20 @@ class Service:
         account.withdraw(amount)
         self._balance -= amount
         return self._balance
+    
+    @staticmethod
+    def _advance_date(orig_date: date, num_years):
+        """
+        Advance a date by a number of years, to the first day of the following month
+        
+        Arguments:
+            orig_date (date): the original date to be advanced
+            num_years (int): the number of years to advance the date
+
+        Returns:
+            the advanced date
+        """
+        return orig_date.replace(year = orig_date.year + num_years, month = orig_date.month + 1, day = 1)
 
 class CreditCard(Service):
     """
@@ -85,12 +110,25 @@ class CreditCard(Service):
         advance_cash: Pay out a cash advance against the card
     """
 
-    def __init__(self, owner, acct_number, interest_rate, credit_limit, cash_advance_limit, open_date=date.today(), minimum_payment = 25, balance = 0):
+    def __init__(self, owner, acct_number, interest_rate, credit_limit, cash_advance_limit = 0, open_date=date.today(), minimum_payment = 25, balance = 0):
+        """
+        Opens a new credit card, that expires 3 years after opening.
+
+        Attributes:
+        owner (int): Customer number of the person who opened the card
+        acct_number (int): Account number
+        open_date (date): The date on which the card was opened
+        balance (num): Balance on the card. Default is 0; if this is a balance transfer specify an initial balance
+        interest_rate (num): Annual interest rate on the card, in percent
+        credit_limit (num): The maximum balance this card can have
+        cash_advance_limit (num): The maximum amount of cash this card can advance to its owner. If not specified, defaults to 25% of credit limit
+        minimum_payment (num): The minimum monthly payment that must be made on this card
+        """
         super().__init__(owner, acct_number, balance, interest_rate, open_date=open_date)
         self.credit_limit = credit_limit
-        self.cash_advance_limit = cash_advance_limit
+        self.cash_advance_limit = cash_advance_limit if cash_advance_limit != 0 else self.credit_limit / 4
         self._minimum_payment = minimum_payment
-        self.expiration_date = self.open_date.replace(self.open_date.year + 3)
+        self._expiration_date = self._advance_date(open_date, 3)
 
     @property
     def minimum_payment(self):
@@ -99,6 +137,11 @@ class CreditCard(Service):
         Either $25, or 10% of the current balance, whichever is greater
         """
         return max(self._minimum_payment, self.balance / 10)
+
+    @property
+    def expiration_date(self):
+        """The date on which this card expires"""
+        return self._expiration_date
     
     def charge(self, amount):
         """
@@ -149,7 +192,7 @@ class CreditCard(Service):
         
 class Loan(Service):
     """
-    Loan extends Service
+    Loan extends Service. Assumes payments will be made monthly
     
     Attributes:
         owner (int): Customer number of the person who opened the loan
@@ -157,9 +200,48 @@ class Loan(Service):
         open_date (date): The date on which the loan was opened
         balance (num): Balance on the loan
         interest_rate (num): Annual interest rate on the loan, in percent
-        maturity_date(num): The date the loan matures
+        maturity_date (date): The date the loan matures
+        monthly_payment (num): The required monthly payment
 
     Methods:
         make_payment: Make a payment on the loan (overridden)
-        calculate_amortization: Determine the monthly payment
+        calculate_amortization: (re)Calculate the monthly payment
     """
+
+    def __init__(self, owner, acct_number, balance, interest_rate, open_date=date.today(), term=30):
+        """
+        Creates a new Loan.
+
+        Attributes:
+        owner (int): Customer number of the person who opened the loan
+        acct_number (int): Loan account number
+        open_date (date): The date on which the loan was opened
+        balance (num): Opening balance of the loan
+        interest_rate (num): Annual interest rate on the loan, in percent
+        term (num): Loan term, in years
+        """
+        super().__init__(owner, acct_number, balance, interest_rate, open_date=open_date)
+        self._maturity_date = self._advance_date(open_date, term)
+        self._monthly_pmt = self.calculate_amortization(term * 12)
+
+    @property
+    def maturity_date(self):
+        return self._maturity_date
+
+    @property
+    def monthly_payment(self):
+        return self._monthly_pmt
+
+    def calculate_amortization(self, num_pays: int):
+        """
+        Calculates the monthly payment on this loan.
+
+        Arguments:
+            num_pays (int): Number of payments to be made on the loan
+        
+        Returns:
+            the monthly payment
+        """
+        r = self._interest_rate / 1200.0
+        mp = self._balance * r / (1 - (1 + r) ** num_pays)
+        return mp
