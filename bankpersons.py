@@ -1,3 +1,6 @@
+from accounts import Account
+import services as sv
+
 class Person:
     def __init__(self, first_name, last_name):
         """ 
@@ -31,12 +34,26 @@ class Customer(Person):
         Also initializes with empty lists of Accounts and Services
         """
         super().__init__(first_name, last_name)
-        self.cust_number = cust_number
+        self._cust_number = cust_number
         self.services = []
         self.accounts = []
+    
+    @property
+    def cust_number(self):
+        """Customer number"""
+        return self._cust_number
 
-    def open_account(self, acct_type):
+    def open_account(self, acct_num, acct_type, init_bal, interest_rate):
         """
         Open an account of the specified type
         """
-        pass
+        new_acct = Account(self.cust_number, acct_num, acct_type, interest_rate)
+        new_acct.deposit(init_bal)
+        self.accounts.append(new_acct)
+
+    def open_creditcard(self, new_card:sv.CreditCard):
+        self.services.append(new_card)
+
+    def open_loan(self, new_loan:sv.Loan):
+        self.services.append(new_loan)
+        
