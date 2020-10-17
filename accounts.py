@@ -19,10 +19,10 @@ class Account:
         Creates a new Account of the specified type and interest rate.
 
         Args:
-            owner
-            acct_number
-            acct_type -> type
-            interest_rate
+            owner (int): Customer number of the person who owns the account
+            acct_number (int): Account number
+            acct_type (str): Account type - either 'savings' or 'checking'
+            interest_rate (num): Interest rate on the account, in percent
         
         Raises:
             ValueError: acct_type is neither 'savings' nor 'checking', or interest rate is 0 and type is 'savings'
@@ -33,7 +33,7 @@ class Account:
             raise ValueError("Savings accounts must have an interest rate")
         self.owner = owner
         self.acct_number = acct_number
-        self.type = acct_type.lower()
+        self._type = acct_type.lower()
         self._balance = 0
         self._interest_rate = interest_rate
 
@@ -46,6 +46,11 @@ class Account:
     def interest_rate(self):
         """Annual interest rate on the account, in percent"""
         return self._interest_rate
+    
+    @property
+    def type(self):
+        """Account type, checking or savings"""
+        return self._type
     
     def deposit(self, amount):
         """
