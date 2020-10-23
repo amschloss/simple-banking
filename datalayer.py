@@ -100,3 +100,53 @@ def employee_select(emp_id = None, first_name = None, last_name = None):
     return [Employee(row['firstname'], row['lastname'], row['empid']).add_contact(
         row['address'], row['city'], row['state'], row['zipcode'], row['email']
     ) for row in result]
+
+def customer_upsert(cust:Customer):
+    """
+    Adds a new or updates an existing Customer to the database.
+
+    Arguments:
+        cust(Customer): The customer to add/update
+    """
+    stmt = None
+    is_new_cust = False
+    if customer_select(cust_id= cust.cust_number):
+        stmt = customers.update().where(customers.c.custid == cust.cust_number)
+    else:
+        stmt = customers.insert()
+        is_new_cust = True
+    stmt = stmt.values(firstname=cust.first_name, lastname=cust.last_name, address=cust.address,
+                       city=cust.city, state=cust.state, zipcode=cust.zipcode, email=cust.email)
+    result = conn.execute(stmt)
+    if is_new_cust:
+        cust.cust_number = result.inserted_primary_key
+
+def customer_select(cust_id = None, first_name = None, last_name = None):
+    """
+    Finds Customers in the database.
+    Searches by ID/customer number or full name; if no arguments are specified, searches for all customers
+
+    Arguments (all optional):
+        cust_id (int): A customer ID to search for
+        first_name (str): A customer first name to search for
+        last_name (str): A customer last name to search for
+
+    Returns:
+        a list of Customers meeting any criteria specified
+
+    Raises:
+        ValueError: only one of first_name and last_name are specified
+    """
+    stmt = select(customers)
+    if cust_id == None and first_name == None and last_name == None:
+        pass
+    elif cust_id != None:
+        stmt = stmt.where(customers.c.empid == cust_id)
+    elif first_name != None and last_name != None:
+        stmt = stmt.where(and_(customers.c.firstname == first_name, customers.c.lastname == last_name))
+    else:
+        raise ValueError("Please specify one of the following: no arguments, a customer ID, or both first AND last name")
+    result = conn.execute(stmt)
+    return [Customer(row['firstname'], row['lastname'], row['custid']).add_contact(
+        row['address'], row['city'], row['state'], row['zipcode'], row['email']
+    ) for row in result]
