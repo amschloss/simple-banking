@@ -60,7 +60,7 @@ def employee_upsert(emp:Employee):
     """
     stmt = None
     is_new_emp = False
-    if employee_select(emp_id = emp.employee_number):
+    if employee_srch(emp_id = emp.employee_number):
         stmt = employees.update().where(employees.c.empid == emp.employee_number)
     else:
         stmt = employees.insert()
@@ -71,7 +71,7 @@ def employee_upsert(emp:Employee):
     if is_new_emp:
         emp.employee_number = result.inserted_primary_key
 
-def employee_select(emp_id = None, first_name = None, last_name = None):
+def employee_srch(emp_id = None, first_name = None, last_name = None):
     """
     Finds Employees in the database.
     Searches by ID/employee number or full name; if no arguments are specified, searches for all employees
@@ -110,7 +110,7 @@ def customer_upsert(cust:Customer):
     """
     stmt = None
     is_new_cust = False
-    if customer_select(cust_id= cust.cust_number):
+    if customer_srch(cust_id= cust.cust_number):
         stmt = customers.update().where(customers.c.custid == cust.cust_number)
     else:
         stmt = customers.insert()
@@ -121,7 +121,7 @@ def customer_upsert(cust:Customer):
     if is_new_cust:
         cust.cust_number = result.inserted_primary_key
 
-def customer_select(cust_id = None, first_name = None, last_name = None):
+def customer_srch(cust_id = None, first_name = None, last_name = None):
     """
     Finds Customers in the database.
     Searches by ID/customer number or full name; if no arguments are specified, searches for all customers
@@ -150,3 +150,44 @@ def customer_select(cust_id = None, first_name = None, last_name = None):
     return [Customer(row['firstname'], row['lastname'], row['custid']).add_contact(
         row['address'], row['city'], row['state'], row['zipcode'], row['email']
     ) for row in result]
+
+def account_upsert(acct:Account):
+    """
+    Adds a new or updates an existing Account to the database.
+
+    Arguments:
+        acct(Account): The account to add/update
+    """
+    stmt = None
+    if account_srch(acct_num = acct.acct_number):
+        stmt = accounts.update().where(accounts.c.acctnum == acct.acct_number)
+    else:
+        stmt = employees.insert()
+    stmt = stmt.values(acctnum = acct.acct_number, owner = acct.owner, accttype = acct.type,
+                       balance = acct.balance, intrate = acct.interest_rate)
+    result = conn.execute(stmt)
+    
+def account_srch(acct_num = None, cust_num = None):
+    """
+    Finds Accounts in the database.
+    Searches by account number, or customer number
+
+    Arguments (one must be specified):
+        acct_num (int): An account number to search for
+        cust_num (int): A customer number to retrieve all accounts for
+
+    Returns:
+        a list of Accounts meeting any criteria specified
+
+    Raises:
+        ValueError: neither acct_num or cust_num are specified
+    """
+    stmt = select(accounts)
+    if acct_num != None:
+        stmt = stmt.where(accounts.c.acctnum == acct_num)
+    elif cust_num != None:
+        stmt = stmt.where(accounts.c.owner == cust_num)
+    else:
+        raise ValueError("Must specify either acct_num or cust_num to search for accounts")
+    result = conn.execute(stmt)
+    return [Account(row['owner'], row['acctnum'], row['accttype'], row['intrate']).deposit(row['balance']) for row in result]
