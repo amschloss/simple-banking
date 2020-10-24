@@ -162,7 +162,7 @@ def account_upsert(acct:Account):
     if account_srch(acct_num = acct.acct_number):
         stmt = accounts.update().where(accounts.c.acctnum == acct.acct_number)
     else:
-        stmt = employees.insert()
+        stmt = accounts.insert()
     stmt = stmt.values(acctnum = acct.acct_number, owner = acct.owner, accttype = acct.type,
                        balance = acct.balance, intrate = acct.interest_rate)
     result = conn.execute(stmt)
@@ -191,3 +191,47 @@ def account_srch(acct_num = None, cust_num = None):
         raise ValueError("Must specify either acct_num or cust_num to search for accounts")
     result = conn.execute(stmt)
     return [Account(row['owner'], row['acctnum'], row['accttype'], row['intrate']).deposit(row['balance']) for row in result]
+
+def credit_card_upsert(card:CreditCard):
+    """
+    Adds a new or updates an existing Account to the database.
+
+    Arguments:
+        acct(Account): The account to add/update
+    """
+    stmt = None
+    if account_srch(acct_num = card.acct_number):
+        stmt = credit_cards.update().where(credit_cards.c.acctnum == card.acct_number)
+    else:
+        stmt = credit_cards.insert()
+    stmt = stmt.values(acctnum = card.acct_number, owner = card.owner, balance = card.balance,
+                       intrate = card.interest_rate, opendate = card.open_date, limit = card.credit_limit,
+                       cashlimit = card.cash_advance_limit, minpayment = card.minimum_payment)
+    result = conn.execute(stmt)
+    
+def credit_card_srch(acct_num = None, cust_num = None):
+    """
+    Finds CreditCards in the database.
+    Searches by account number, or customer number
+
+    Arguments (one must be specified):
+        acct_num (int): An account number to search for
+        cust_num (int): A customer number to retrieve all credit cards for
+
+    Returns:
+        a list of CreditCards meeting any criteria specified
+
+    Raises:
+        ValueError: neither acct_num or cust_num are specified
+    """
+    stmt = select(credit_cards)
+    if acct_num != None:
+        stmt = stmt.where(credit_cards.c.acctnum == acct_num)
+    elif cust_num != None:
+        stmt = stmt.where(credit_cards.c.owner == cust_num)
+    else:
+        raise ValueError("Must specify either acct_num or cust_num to search for credit cards")
+    result = conn.execute(stmt)
+    return [CreditCard(row['owner'], row['acctnum'], row['intrate'], row['limit'], 
+            cash_advance_limit=row['cashlimit'], open_date=row['opendate'], 
+            minimum_payment=row['minpayment'], balance=row['balance']) for row in result]
