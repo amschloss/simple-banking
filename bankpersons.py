@@ -43,17 +43,15 @@ class Customer(Person):
         """Customer number"""
         return self._cust_number
 
-    def open_account(self, acct_num, acct_type, init_bal, interest_rate):
-        """
-        Open an account of the specified type
-        """
-        new_acct = Account(self.cust_number, acct_num, acct_type, interest_rate)
-        new_acct.deposit(init_bal)
+    def open_account(self, new_acct:Account):
+        """Attach an account to the customer"""
         self.accounts.append(new_acct)
 
     def open_creditcard(self, new_card:sv.CreditCard):
+        """Attach a credit card to the customer"""
         self.services.append(new_card)
 
     def open_loan(self, new_loan:sv.Loan):
+        """Attach a loan to the customer"""
         self.services.append(new_loan)
         
