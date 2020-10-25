@@ -37,15 +37,10 @@ class Customer(Person):
         Also initializes with empty lists of Accounts and Services
         """
         super().__init__(first_name, last_name)
-        self._cust_number = cust_number
+        self.cust_number = cust_number
         self.services = []
         self.accounts = []
     
-    @property
-    def cust_number(self):
-        """Customer number"""
-        return self._cust_number
-
     def __repr__(self):
         return f'Customer ID {self.cust_number}: {self.first_name} {self.last_name}'
 
