@@ -26,6 +26,9 @@ class Employee(Person):
         """
         super().__init__(first_name, last_name)
         self.employee_number = employee_number
+    
+    def __repr__(self):
+        return f'Employee ID {self.employee_number}: {self.first_name} {self.last_name}'
 
 class Customer(Person):
     def __init__(self, first_name, last_name, cust_number):
@@ -42,6 +45,9 @@ class Customer(Person):
     def cust_number(self):
         """Customer number"""
         return self._cust_number
+
+    def __repr__(self):
+        return f'Customer ID {self.cust_number}: {self.first_name} {self.last_name}'
 
     def open_account(self, new_acct:Account):
         """Attach an account to the customer"""
