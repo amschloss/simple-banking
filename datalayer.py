@@ -101,6 +101,8 @@ def employee_srch(emp_id = None, first_name = None, last_name = None):
             emp = Employee(row['firstname'], row['lastname'], row['empid'])
             emp.add_contact(row['address'], row['city'], row['state'], row['zipcode'], row['email'])
             emps.append(emp)
+        if len(emps) == 1:
+            emps = emps[0]
         return emps
 
 def customer_upsert(cust:Customer):
@@ -145,15 +147,20 @@ def customer_srch(cust_id = None, first_name = None, last_name = None):
         if cust_id == None and first_name == None and last_name == None:
             pass
         elif cust_id != None:
-            stmt = stmt.where(customers.c.empid == cust_id)
+            stmt = stmt.where(customers.c.custid == cust_id)
         elif first_name != None and last_name != None:
             stmt = stmt.where(and_(customers.c.firstname == first_name, customers.c.lastname == last_name))
         else:
             raise ValueError("Please specify one of the following: no arguments, a customer ID, or both first AND last name")
         result = conn.execute(stmt)
-        return [Customer(row['firstname'], row['lastname'], row['custid']).add_contact(
-            row['address'], row['city'], row['state'], row['zipcode'], row['email']
-        ) for row in result]
+        custs = []
+        for row in result:
+            cust = Customer(row['firstname'], row['lastname'], row['custid'])
+            cust.add_contact(row['address'], row['city'], row['state'], row['zipcode'], row['email'])
+            custs.append(cust)
+        if len(custs) == 0:
+            custs = custs[0]
+        return custs
 
 def account_upsert(acct:Account):
     """
