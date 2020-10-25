@@ -49,7 +49,6 @@ loans = Table('loans', metadata,
 )
 
 metadata.create_all(engine)
-conn = engine.connect()
 
 def employee_upsert(emp:Employee):
     """
@@ -58,18 +57,19 @@ def employee_upsert(emp:Employee):
     Arguments:
         emp(Employee): The employee to add/update
     """
-    stmt = None
-    is_new_emp = False
-    if employee_srch(emp_id = emp.employee_number):
-        stmt = employees.update().where(employees.c.empid == emp.employee_number)
-    else:
-        stmt = employees.insert()
-        is_new_emp = True
-    stmt = stmt.values(firstname=emp.first_name, lastname=emp.last_name, address=emp.address,
-                       city=emp.city, state=emp.state, zipcode=emp.zipcode, email=emp.email)
-    result = conn.execute(stmt)
-    if is_new_emp:
-        emp.employee_number = result.inserted_primary_key
+    with engine.connect() as conn:
+        stmt = None
+        is_new_emp = False
+        if employee_srch(emp_id = emp.employee_number):
+            stmt = employees.update().where(employees.c.empid == emp.employee_number)
+        else:
+            stmt = employees.insert()
+            is_new_emp = True
+        stmt = stmt.values(firstname=emp.first_name, lastname=emp.last_name, address=emp.address,
+                        city=emp.city, state=emp.state, zipcode=emp.zipcode, email=emp.email)
+        result = conn.execute(stmt)
+        if is_new_emp:
+            emp.employee_number = result.inserted_primary_key
 
 def employee_srch(emp_id = None, first_name = None, last_name = None):
     """
@@ -87,19 +87,21 @@ def employee_srch(emp_id = None, first_name = None, last_name = None):
     Raises:
         ValueError: only one of first_name and last_name are specified
     """
-    stmt = select(employees)
-    if emp_id == None and first_name == None and last_name == None:
-        pass
-    elif emp_id != None:
-        stmt = stmt.where(employees.c.empid == emp_id)
-    elif first_name != None and last_name != None:
-        stmt = stmt.where(and_(employees.c.firstname == first_name, employees.c.lastname == last_name))
-    else:
-        raise ValueError("Please specify one of the following: no arguments, an employee ID, or both first AND last name")
-    result = conn.execute(stmt)
-    return [Employee(row['firstname'], row['lastname'], row['empid']).add_contact(
-        row['address'], row['city'], row['state'], row['zipcode'], row['email']
-    ) for row in result]
+    with engine.connect() as conn:
+        stmt = select([employees])
+        if emp_id != None:
+            stmt = stmt.where(employees.c.empid == emp_id)
+        elif first_name != None and last_name != None:
+            stmt = stmt.where(and_(employees.c.firstname == first_name, employees.c.lastname == last_name))
+        elif not (emp_id == None and first_name == None and last_name == None):
+            raise ValueError("Please specify one of the following: no arguments, an employee ID, or both first AND last name")
+        result = conn.execute(stmt)
+        emps = []
+        for row in result:
+            emp = Employee(row['firstname'], row['lastname'], row['empid'])
+            emp.add_contact(row['address'], row['city'], row['state'], row['zipcode'], row['email'])
+            emps.append(emp)
+        return emps
 
 def customer_upsert(cust:Customer):
     """
@@ -108,18 +110,19 @@ def customer_upsert(cust:Customer):
     Arguments:
         cust(Customer): The customer to add/update
     """
-    stmt = None
-    is_new_cust = False
-    if customer_srch(cust_id= cust.cust_number):
-        stmt = customers.update().where(customers.c.custid == cust.cust_number)
-    else:
-        stmt = customers.insert()
-        is_new_cust = True
-    stmt = stmt.values(firstname=cust.first_name, lastname=cust.last_name, address=cust.address,
-                       city=cust.city, state=cust.state, zipcode=cust.zipcode, email=cust.email)
-    result = conn.execute(stmt)
-    if is_new_cust:
-        cust.cust_number = result.inserted_primary_key
+    with engine.connect() as conn:
+        stmt = None
+        is_new_cust = False
+        if customer_srch(cust_id= cust.cust_number):
+            stmt = customers.update().where(customers.c.custid == cust.cust_number)
+        else:
+            stmt = customers.insert()
+            is_new_cust = True
+        stmt = stmt.values(firstname=cust.first_name, lastname=cust.last_name, address=cust.address,
+                        city=cust.city, state=cust.state, zipcode=cust.zipcode, email=cust.email)
+        result = conn.execute(stmt)
+        if is_new_cust:
+            cust.cust_number = result.inserted_primary_key
 
 def customer_srch(cust_id = None, first_name = None, last_name = None):
     """
@@ -137,19 +140,20 @@ def customer_srch(cust_id = None, first_name = None, last_name = None):
     Raises:
         ValueError: only one of first_name and last_name are specified
     """
-    stmt = select(customers)
-    if cust_id == None and first_name == None and last_name == None:
-        pass
-    elif cust_id != None:
-        stmt = stmt.where(customers.c.empid == cust_id)
-    elif first_name != None and last_name != None:
-        stmt = stmt.where(and_(customers.c.firstname == first_name, customers.c.lastname == last_name))
-    else:
-        raise ValueError("Please specify one of the following: no arguments, a customer ID, or both first AND last name")
-    result = conn.execute(stmt)
-    return [Customer(row['firstname'], row['lastname'], row['custid']).add_contact(
-        row['address'], row['city'], row['state'], row['zipcode'], row['email']
-    ) for row in result]
+    with engine.connect() as conn:
+        stmt = select([customers])
+        if cust_id == None and first_name == None and last_name == None:
+            pass
+        elif cust_id != None:
+            stmt = stmt.where(customers.c.empid == cust_id)
+        elif first_name != None and last_name != None:
+            stmt = stmt.where(and_(customers.c.firstname == first_name, customers.c.lastname == last_name))
+        else:
+            raise ValueError("Please specify one of the following: no arguments, a customer ID, or both first AND last name")
+        result = conn.execute(stmt)
+        return [Customer(row['firstname'], row['lastname'], row['custid']).add_contact(
+            row['address'], row['city'], row['state'], row['zipcode'], row['email']
+        ) for row in result]
 
 def account_upsert(acct:Account):
     """
@@ -158,15 +162,16 @@ def account_upsert(acct:Account):
     Arguments:
         acct(Account): The account to add/update
     """
-    stmt = None
-    if account_srch(acct_num = acct.acct_number):
-        stmt = accounts.update().where(accounts.c.acctnum == acct.acct_number)
-    else:
-        stmt = accounts.insert()
-    stmt = stmt.values(acctnum = acct.acct_number, owner = acct.owner, accttype = acct.type,
-                       balance = acct.balance, intrate = acct.interest_rate)
-    result = conn.execute(stmt)
-    
+    with engine.connect() as conn:
+        stmt = None
+        if account_srch(acct_num = acct.acct_number):
+            stmt = accounts.update().where(accounts.c.acctnum == acct.acct_number)
+        else:
+            stmt = accounts.insert()
+        stmt = stmt.values(acctnum = acct.acct_number, owner = acct.owner, accttype = acct.type,
+                        balance = acct.balance, intrate = acct.interest_rate)
+        result = conn.execute(stmt)
+        
 def account_srch(acct_num = None, cust_num = None):
     """
     Finds Accounts in the database.
@@ -182,15 +187,16 @@ def account_srch(acct_num = None, cust_num = None):
     Raises:
         ValueError: neither acct_num or cust_num are specified
     """
-    stmt = select(accounts)
-    if acct_num != None:
-        stmt = stmt.where(accounts.c.acctnum == acct_num)
-    elif cust_num != None:
-        stmt = stmt.where(accounts.c.owner == cust_num)
-    else:
-        raise ValueError("Must specify either acct_num or cust_num to search for accounts")
-    result = conn.execute(stmt)
-    return [Account(row['owner'], row['acctnum'], row['accttype'], row['intrate']).deposit(row['balance']) for row in result]
+    with engine.connect() as conn:
+        stmt = select([accounts])
+        if acct_num != None:
+            stmt = stmt.where(accounts.c.acctnum == acct_num)
+        elif cust_num != None:
+            stmt = stmt.where(accounts.c.owner == cust_num)
+        else:
+            raise ValueError("Must specify either acct_num or cust_num to search for accounts")
+        result = conn.execute(stmt)
+        return [Account(row['owner'], row['acctnum'], row['accttype'], row['intrate']).deposit(row['balance']) for row in result]
 
 def credit_card_upsert(card:CreditCard):
     """
@@ -199,16 +205,17 @@ def credit_card_upsert(card:CreditCard):
     Arguments:
         acct(Account): The account to add/update
     """
-    stmt = None
-    if account_srch(acct_num = card.acct_number):
-        stmt = credit_cards.update().where(credit_cards.c.acctnum == card.acct_number)
-    else:
-        stmt = credit_cards.insert()
-    stmt = stmt.values(acctnum = card.acct_number, owner = card.owner, balance = card.balance,
-                       intrate = card.interest_rate, opendate = card.open_date, limit = card.credit_limit,
-                       cashlimit = card.cash_advance_limit, minpayment = card.minimum_payment)
-    result = conn.execute(stmt)
-    
+    with engine.connect() as conn:
+        stmt = None
+        if account_srch(acct_num = card.acct_number):
+            stmt = credit_cards.update().where(credit_cards.c.acctnum == card.acct_number)
+        else:
+            stmt = credit_cards.insert()
+        stmt = stmt.values(acctnum = card.acct_number, owner = card.owner, balance = card.balance,
+                        intrate = card.interest_rate, opendate = card.open_date, limit = card.credit_limit,
+                        cashlimit = card.cash_advance_limit, minpayment = card.minimum_payment)
+        result = conn.execute(stmt)
+        
 def credit_card_srch(acct_num = None, cust_num = None):
     """
     Finds CreditCards in the database.
@@ -224,17 +231,18 @@ def credit_card_srch(acct_num = None, cust_num = None):
     Raises:
         ValueError: neither acct_num or cust_num are specified
     """
-    stmt = select(credit_cards)
-    if acct_num != None:
-        stmt = stmt.where(credit_cards.c.acctnum == acct_num)
-    elif cust_num != None:
-        stmt = stmt.where(credit_cards.c.owner == cust_num)
-    else:
-        raise ValueError("Must specify either acct_num or cust_num to search for credit cards")
-    result = conn.execute(stmt)
-    return [CreditCard(row['owner'], row['acctnum'], row['intrate'], row['limit'], 
-            cash_advance_limit=row['cashlimit'], open_date=row['opendate'], 
-            minimum_payment=row['minpayment'], balance=row['balance']) for row in result]
+    with engine.connect() as conn:
+        stmt = select([credit_cards])
+        if acct_num != None:
+            stmt = stmt.where(credit_cards.c.acctnum == acct_num)
+        elif cust_num != None:
+            stmt = stmt.where(credit_cards.c.owner == cust_num)
+        else:
+            raise ValueError("Must specify either acct_num or cust_num to search for credit cards")
+        result = conn.execute(stmt)
+        return [CreditCard(row['owner'], row['acctnum'], row['intrate'], row['limit'], 
+                cash_advance_limit=row['cashlimit'], open_date=row['opendate'], 
+                minimum_payment=row['minpayment'], balance=row['balance']) for row in result]
 
 def loan_upsert(loan:Loan):
     """
@@ -243,15 +251,16 @@ def loan_upsert(loan:Loan):
     Arguments:
         acct(Account): The account to add/update
     """
-    stmt = None
-    if account_srch(acct_num = loan.acct_number):
-        stmt = loans.update().where(loans.c.acctnum == loan.acct_number)
-    else:
-        stmt = loans.insert()
-    stmt = stmt.values(acctnum = loan.acct_number, owner = loan.owner, balance = loan.balance,
-                       intrate = loan.interest_rate, opendate = loan.open_date,
-                       maturitydate = loan.maturity_date, monthlypmt = loan.monthly_payment)
-    result = conn.execute(stmt)
+    with engine.connect() as conn:
+        stmt = None
+        if account_srch(acct_num = loan.acct_number):
+            stmt = loans.update().where(loans.c.acctnum == loan.acct_number)
+        else:
+            stmt = loans.insert()
+        stmt = stmt.values(acctnum = loan.acct_number, owner = loan.owner, balance = loan.balance,
+                        intrate = loan.interest_rate, opendate = loan.open_date,
+                        maturitydate = loan.maturity_date, monthlypmt = loan.monthly_payment)
+        result = conn.execute(stmt)
     
 def loan_srch(acct_num = None, cust_num = None):
     """
@@ -268,13 +277,14 @@ def loan_srch(acct_num = None, cust_num = None):
     Raises:
         ValueError: neither acct_num or cust_num are specified
     """
-    stmt = select(loans)
-    if acct_num != None:
-        stmt = stmt.where(loans.c.acctnum == acct_num)
-    elif cust_num != None:
-        stmt = stmt.where(loans.c.owner == cust_num)
-    else:
-        raise ValueError("Must specify either acct_num or cust_num to search for credit cards")
-    result = conn.execute(stmt)
-    return [Loan(row['owner'], row['acctnum'], row['balance'], row['intrate'], row['opendate'],
-                 maturity_date=row['maturitydate'], monthly_pmt=row['monthlypmt']) for row in result]
+    with engine.connect() as conn:
+        stmt = select([loans])
+        if acct_num != None:
+            stmt = stmt.where(loans.c.acctnum == acct_num)
+        elif cust_num != None:
+            stmt = stmt.where(loans.c.owner == cust_num)
+        else:
+            raise ValueError("Must specify either acct_num or cust_num to search for credit cards")
+        result = conn.execute(stmt)
+        return [Loan(row['owner'], row['acctnum'], row['balance'], row['intrate'], row['opendate'],
+                    maturity_date=row['maturitydate'], monthly_pmt=row['monthlypmt']) for row in result]
