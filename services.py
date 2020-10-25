@@ -208,21 +208,23 @@ class Loan(Service):
         calculate_amortization: (re)Calculate the monthly payment
     """
 
-    def __init__(self, owner, acct_number, balance, interest_rate, open_date=date.today(), term=30):
+    def __init__(self, owner, acct_number, balance, interest_rate, open_date=date.today(), term=30, maturity_date = None, monthly_pmt = None):
         """
         Creates a new Loan.
 
         Attributes:
         owner (int): Customer number of the person who opened the loan
         acct_number (int): Loan account number
-        open_date (date): The date on which the loan was opened
+        open_date (date): The date on which the loan was opened. Defaults to today
         balance (num): Opening balance of the loan
         interest_rate (num): Annual interest rate on the loan, in percent
-        term (num): Loan term, in years
+        term (num): Loan term, in years. Defaults to 30
+        maturity_date (date): The date the loan matures. Defaults to calculate based on term
+        monthly_pmt (num): The required monthly payment. Defaults to calculate based on term
         """
         super().__init__(owner, acct_number, balance, interest_rate, open_date=open_date)
-        self._maturity_date = self._advance_date(open_date, term)
-        self._monthly_pmt = self.calculate_amortization(term * 12)
+        self._maturity_date = maturity_date if maturity_date is None else self._advance_date(open_date, term)
+        self._monthly_pmt = monthly_pmt if monthly_pmt is None else self.calculate_amortization(term * 12)
 
     @property
     def maturity_date(self):

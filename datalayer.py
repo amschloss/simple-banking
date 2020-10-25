@@ -235,3 +235,46 @@ def credit_card_srch(acct_num = None, cust_num = None):
     return [CreditCard(row['owner'], row['acctnum'], row['intrate'], row['limit'], 
             cash_advance_limit=row['cashlimit'], open_date=row['opendate'], 
             minimum_payment=row['minpayment'], balance=row['balance']) for row in result]
+
+def loan_upsert(loan:Loan):
+    """
+    Adds a new or updates an existing Account to the database.
+
+    Arguments:
+        acct(Account): The account to add/update
+    """
+    stmt = None
+    if account_srch(acct_num = loan.acct_number):
+        stmt = loans.update().where(loans.c.acctnum == loan.acct_number)
+    else:
+        stmt = loans.insert()
+    stmt = stmt.values(acctnum = loan.acct_number, owner = loan.owner, balance = loan.balance,
+                       intrate = loan.interest_rate, opendate = loan.open_date,
+                       maturitydate = loan.maturity_date, monthlypmt = loan.monthly_payment)
+    result = conn.execute(stmt)
+    
+def loan_srch(acct_num = None, cust_num = None):
+    """
+    Finds Loans in the database.
+    Searches by account number, or customer number
+
+    Arguments (one must be specified):
+        acct_num (int): An account number to search for
+        cust_num (int): A customer number to retrieve all loans for
+
+    Returns:
+        a list of Loans meeting any criteria specified
+
+    Raises:
+        ValueError: neither acct_num or cust_num are specified
+    """
+    stmt = select(loans)
+    if acct_num != None:
+        stmt = stmt.where(loans.c.acctnum == acct_num)
+    elif cust_num != None:
+        stmt = stmt.where(loans.c.owner == cust_num)
+    else:
+        raise ValueError("Must specify either acct_num or cust_num to search for credit cards")
+    result = conn.execute(stmt)
+    return [Loan(row['owner'], row['acctnum'], row['balance'], row['intrate'], row['opendate'],
+                 maturity_date=row['maturitydate'], monthly_pmt=row['monthlypmt']) for row in result]
