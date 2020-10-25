@@ -158,7 +158,7 @@ def customer_srch(cust_id = None, first_name = None, last_name = None):
             cust = Customer(row['firstname'], row['lastname'], row['custid'])
             cust.add_contact(row['address'], row['city'], row['state'], row['zipcode'], row['email'])
             custs.append(cust)
-        if len(custs) == 0:
+        if len(custs) == 1:
             custs = custs[0]
         return custs
 
