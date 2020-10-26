@@ -37,6 +37,12 @@ class Account:
         self._balance = 0
         self._interest_rate = interest_rate
 
+    def __repr__(self):
+        base_repr = f'{self.type} account nbr {self.acct_number} has balance ${self.balance}'
+        if self.interest_rate != 0:
+            base_repr += f' at {self.interest_rate}% interest'
+        return base_repr
+
     @property
     def balance(self):
         """Balance in this account"""
