@@ -20,6 +20,11 @@ def set_up_customer(first_name, last_name):
     new_cust.add_contact(addr, city, state, zipcode, email)
     return new_cust
 
+def load_accts(cust:Customer):
+    cust.accounts = account_srch(cust_num=cust.cust_number)
+    cust.services = credit_card_srch(cust_num=cust.cust_number)
+    cust.services.append(loan_srch(cust_num=cust.cust_number))
+
 def view_accts(cust:Customer):
     header = f"Accounts for {cust.first_name} {cust.last_name}:"
     header_deco = '=' * len(header)
@@ -59,10 +64,11 @@ if not cust:
     customer_upsert(cust)
     print(f"Thanks {fname}! You're all set up, your customer number is {cust.cust_number}")
 else:
+    load_accts(cust)
     print(f"Welcome back, {fname}!")
 
 selection = 1
-choices = {1: view_accts, 2: new_acct, 3: new_card, 4: new_loan, 5: make_pmt}
+choices = {1: view_accts, 2: new_acct, 3: new_card, 4: new_loan, 5: make_pmt, 0: lambda x: ""}
 while selection != 0:
     print("What would you like to do?")
     print("1. See my existing accounts and services")
