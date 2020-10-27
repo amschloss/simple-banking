@@ -142,6 +142,9 @@ class CreditCard(Service):
     def expiration_date(self):
         """The date on which this card expires"""
         return self._expiration_date
+
+    def __repr__(self):
+        return f'Credit card nbr {self.acct_number} has balance ${self.balance} of ${self.credit_limit} at {self.interest_rate}%; minimum payment ${self.minimum_payment}'
     
     def charge(self, amount):
         """
@@ -234,6 +237,9 @@ class Loan(Service):
     def monthly_payment(self):
         return self._monthly_pmt
 
+    def __repr__(self):
+        return f'Loan nbr {self.acct_number} has balance ${self.balance} at {self.interest_rate}%, monthly payment ${self.monthly_payment}, matures on {self.maturity_date}'
+    
     def calculate_amortization(self, num_pays: int):
         """
         Calculates the monthly payment on this loan.
