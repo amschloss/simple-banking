@@ -144,7 +144,9 @@ class CreditCard(Service):
         return self._expiration_date
 
     def __repr__(self):
-        return f'Credit card nbr {self.acct_number} has balance ${self.balance} of ${self.credit_limit} at {self.interest_rate}%; minimum payment ${self.minimum_payment}'
+        repr_str = f'Credit card nbr {self.acct_number} has balance ${round(self.balance, 2)} of ${self.credit_limit}'
+        repr_str += f' at {round(self.interest_rate, 2)}%; minimum payment ${round(self.minimum_payment, 2)}'
+        return 
     
     def charge(self, amount):
         """

@@ -73,7 +73,13 @@ def new_acct(cust:Customer):
     print("Account opened successfully:", new_account)
 
 def new_card(cust:Customer):
-    pass
+    cred_limit = randint(10, 50) * 100
+    acct_num = randint(1000000000, 9999999999)
+    int_rate = random() * 10 + 15
+    card = CreditCard(cust.cust_number, acct_num, int_rate, cred_limit)
+    cust.open_creditcard(card)
+    credit_card_upsert(card)
+    print("Credit card opened successfully:", card)
 
 def new_loan(cust:Customer):
     pass
