@@ -203,7 +203,12 @@ def account_srch(acct_num = None, cust_num = None):
         else:
             raise ValueError("Must specify either acct_num or cust_num to search for accounts")
         result = conn.execute(stmt)
-        return [Account(row['owner'], row['acctnum'], row['accttype'], row['intrate']).deposit(row['balance']) for row in result]
+        accts = []
+        for row in result:
+            acct = Account(row['owner'], row['acctnum'], row['accttype'], row['intrate'])
+            acct.deposit(row['balance'])
+            accts.append(acct)
+        return accts
 
 def credit_card_upsert(card:CreditCard):
     """

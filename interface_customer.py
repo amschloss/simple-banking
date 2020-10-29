@@ -1,4 +1,12 @@
+# Customer interface for the simple banking system
+# Allows the customer to:
+#   Set themselves up as a customer, if need be
+#   Review their accounts/services
+#   Open a new account/service
+#   Make a payment
+
 from datalayer import *
+from random import randint, random
 
 def set_up_customer(first_name, last_name):
     """
@@ -44,7 +52,25 @@ def view_accts(cust:Customer):
             print(svc)
 
 def new_acct(cust:Customer):
-    pass
+    print("Which type of account are you opening today?")
+    response_type = ''
+    while response_type not in ('c', 's'):
+        print("C. Checking")
+        print("S. Savings")
+        response_type = input(">> ").lower()
+        if response_type not in ('c', 's'):
+            print("Please type either C for Checking or S for Savings.")
+    acct_types = {'c': "Checking", 's': "Savings"}
+    starting_bal = float(input("How much would you like to deposit to open this account? >> "))
+    acct_num = randint(1000000000, 9999999999)
+    int_rate = 0
+    if response_type == 's':
+        int_rate = random() * 3
+    new_account = Account(cust.cust_number, acct_num, acct_types[response_type], int_rate)
+    new_account.deposit(starting_bal)
+    cust.open_account(new_account)
+    account_upsert(new_account)
+    print("Account opened successfully:", new_account)
 
 def new_card(cust:Customer):
     pass
@@ -77,7 +103,6 @@ while selection != 0:
     print("4. Open a new loan")
     print("5. Make a payment")
     print("0. Exit")
-    print(" ")
     selection = int(input(">> "))
     action = choices.get(selection, lambda x: print("Sorry, that isn't one of the choices, please try again."))
     action(cust)

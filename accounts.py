@@ -38,9 +38,9 @@ class Account:
         self._interest_rate = interest_rate
 
     def __repr__(self):
-        base_repr = f'{self.type} account nbr {self.acct_number} has balance ${self.balance}'
+        base_repr = f'{self.type} account nbr {self.acct_number} has balance ${round(self.balance, 2)}'
         if self.interest_rate != 0:
-            base_repr += f' at {self.interest_rate}% interest'
+            base_repr += f' at {round(self.interest_rate, 2)}% interest'
         return base_repr
 
     @property
