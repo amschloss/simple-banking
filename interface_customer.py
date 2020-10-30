@@ -72,6 +72,12 @@ def new_acct(cust:Customer):
     account_upsert(new_account)
     print("Account opened successfully:", new_account)
 
+def make_deposit(cust:Customer):
+    pass
+
+def make_withdrawal(cust:Customer):
+    pass
+
 def new_card(cust:Customer):
     cred_limit = randint(10, 50) * 100
     acct_num = randint(1000000000, 9999999999)
@@ -80,6 +86,9 @@ def new_card(cust:Customer):
     cust.open_creditcard(card)
     credit_card_upsert(card)
     print("Credit card opened successfully:", card)
+
+def card_charge(cust:Customer):
+    pass
 
 def new_loan(cust:Customer):
     pass
@@ -100,14 +109,18 @@ else:
     print(f"Welcome back, {fname}!")
 
 selection = 1
-choices = {1: view_accts, 2: new_acct, 3: new_card, 4: new_loan, 5: make_pmt, 0: lambda x: ""}
+choices = {1: view_accts, 2: new_acct, 3: make_deposit, 4: make_withdrawal, 5: new_card, 
+           6: card_charge, 7: new_loan, 8: make_pmt, 0: lambda x: ""}
 while selection != 0:
     print("What would you like to do?")
     print("1. See my existing accounts and services")
     print("2. Open a new account")
-    print("3. Open a new credit card")
-    print("4. Open a new loan")
-    print("5. Make a payment")
+    print("3. Make a deposit")
+    print("4. Make a withdrawal")
+    print("5. Open a new credit card")
+    print("6. Make a charge against a card")
+    print("7. Open a new loan")
+    print("8. Make a card/loan payment")
     print("0. Exit")
     selection = int(input(">> "))
     action = choices.get(selection, lambda x: print("Sorry, that isn't one of the choices, please try again."))
