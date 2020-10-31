@@ -82,7 +82,23 @@ def new_acct(cust:Customer):
     print("Account opened successfully:", new_account)
 
 def make_deposit(cust:Customer):
-    pass
+    """Interactively allow the Customer to make a deposit to one of their accounts."""
+    accts_enum = list(enumerate(cust.accounts))
+    print("Which account?")
+    for idx,acct in accts_enum:
+        print(f"{idx}. {acct}")
+    try:
+        choice = int(input(">> "))
+        dep_amt = float(input("How much to deposit? >> "))
+        acct = accts_enum[choice][1]
+        new_bal = acct.deposit(dep_amt)
+    except ValueError as err:
+        print(err)
+        print("Deposit canceled. Please enter positive numbers.")
+    else:
+        account_upsert(acct)
+        logging.info(f"{cust} deposited ${round(dep_amt, 2)} into account {acct.acct_number}; new balance ${round(new_bal, 2)}")
+        print("Deposit successful!")
 
 def make_withdrawal(cust:Customer):
     pass

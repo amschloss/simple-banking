@@ -67,7 +67,12 @@ class Account:
 
         Returns:
             the account balance after the deposit
+
+        Raises:
+            ValueError: attempted to deposit negative amount
         """
+        if amount < 0:
+            raise ValueError("Negative deposit not allowed")
         self._balance += amount
         return self._balance
 
@@ -82,10 +87,12 @@ class Account:
             the account balance after the withdrawal
         
         Raises:
-            ValueError: balance would be negative
+            ValueError: balance would be negative, or attempted to withdraw negative amount
         """
         if amount > self._balance:
             raise ValueError("Insufficient funds to make this withdrawal")
+        if amount < 0:
+            raise ValueError("Negative withdrawal not allowed")
         self._balance -= amount
         return self._balance
 
