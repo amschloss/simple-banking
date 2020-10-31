@@ -219,7 +219,7 @@ def credit_card_upsert(card:CreditCard):
     """
     with engine.connect() as conn:
         stmt = None
-        if account_srch(acct_num = card.acct_number):
+        if credit_card_srch(acct_num = card.acct_number):
             stmt = credit_cards.update().where(credit_cards.c.acctnum == card.acct_number)
         else:
             stmt = credit_cards.insert()
@@ -265,7 +265,7 @@ def loan_upsert(loan:Loan):
     """
     with engine.connect() as conn:
         stmt = None
-        if account_srch(acct_num = loan.acct_number):
+        if loan_srch(acct_num = loan.acct_number):
             stmt = loans.update().where(loans.c.acctnum == loan.acct_number)
         else:
             stmt = loans.insert()

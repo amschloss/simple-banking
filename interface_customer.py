@@ -135,7 +135,7 @@ def card_charge(cust:Customer):
         choice = int(input(">> "))
         card = cards_enum[choice][1]
         chg_amt = float(input("How much to charge? >> "))
-        new_bal = card.deposit(chg_amt)
+        new_bal = card.charge(chg_amt)
     except IndexError:
         print("Charge canceled. Please choose one of the cards available.")
     except ValueError as err:
