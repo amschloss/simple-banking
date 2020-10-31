@@ -89,9 +89,11 @@ def make_deposit(cust:Customer):
         print(f"{idx}. {acct}")
     try:
         choice = int(input(">> "))
-        dep_amt = float(input("How much to deposit? >> "))
         acct = accts_enum[choice][1]
+        dep_amt = float(input("How much to deposit? >> "))
         new_bal = acct.deposit(dep_amt)
+    except IndexError:
+        print("Deposit canceled. Please choose one of the accounts available.")
     except ValueError as err:
         print(err)
         print("Deposit canceled. Please enter positive numbers.")
@@ -101,7 +103,25 @@ def make_deposit(cust:Customer):
         print("Deposit successful!")
 
 def make_withdrawal(cust:Customer):
-    pass
+    """Interactively allow the Customer to make a withdrawal from one of their accounts."""
+    accts_enum = list(enumerate(cust.accounts))
+    print("Which account?")
+    for idx,acct in accts_enum:
+        print(f"{idx}. {acct}")
+    try:
+        choice = int(input(">> "))
+        acct = accts_enum[choice][1]
+        wdr_amt = float(input("How much to withdraw? >> "))
+        new_bal = acct.withdraw(wdr_amt)
+    except IndexError:
+        print("Deposit canceled. Please choose one of the accounts available.")
+    except ValueError as err:
+        print(err)
+        print("Withdrawal canceled. Please enter positive numbers.")
+    else:
+        account_upsert(acct)
+        logging.info(f"{cust} withdrew ${round(wdr_amt, 2)} from account {acct.acct_number}; new balance ${round(new_bal, 2)}")
+        print("Withdrawal successful!")
 
 def new_card(cust:Customer):
     cred_limit = randint(10, 50) * 100
