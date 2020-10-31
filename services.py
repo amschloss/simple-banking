@@ -226,7 +226,16 @@ class Loan(Service):
         term (num): Loan term, in years. Defaults to 30
         maturity_date (date): The date the loan matures. Defaults to calculate based on term
         monthly_pmt (num): The required monthly payment. Defaults to calculate based on term
+
+        Raises:
+            ValueError: specified balance, interest rate, or term are not all positive numbers
         """
+        if balance <= 0:
+            raise ValueError("Loan balance must be positive")
+        if interest_rate <= 0:
+            raise ValueError("Loan interest rate must be positive")
+        if term <= 0:
+            raise ValueError("Loan term must be positive")
         super().__init__(owner, acct_number, balance, interest_rate, open_date=open_date)
         self._maturity_date = maturity_date if maturity_date is None else self._advance_date(open_date, term)
         self._monthly_pmt = monthly_pmt if monthly_pmt is None else self.calculate_amortization(term * 12)

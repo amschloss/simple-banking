@@ -61,17 +61,22 @@ def new_acct(cust:Customer):
         if response_type not in ('c', 's'):
             print("Please type either C for Checking or S for Savings.")
     acct_types = {'c': "Checking", 's': "Savings"}
-    starting_bal = float(input("How much would you like to deposit to open this account? >> "))
-    acct_num = randint(1000000000, 9999999999)
-    int_rate = 0
-    if response_type == 's':
-        int_rate = random() * 3
-    new_account = Account(cust.cust_number, acct_num, acct_types[response_type], int_rate)
-    new_account.deposit(starting_bal)
-    cust.open_account(new_account)
-    account_upsert(new_account)
-    logging.info(f"{cust} opened new {new_account}")
-    print("Account opened successfully:", new_account)
+    try:
+        starting_bal = float(input("How much would you like to deposit to open this account? >> "))
+        acct_num = randint(1000000000, 9999999999)
+        int_rate = 0
+        if response_type == 's':
+            int_rate = random() * 3
+        new_account = Account(cust.cust_number, acct_num, acct_types[response_type], int_rate)
+        new_account.deposit(starting_bal)
+    except ValueError as err:
+        print(err)
+        print("Account open canceled. Please enter positive numbers.")
+    else:
+        cust.open_account(new_account)
+        account_upsert(new_account)
+        logging.info(f"{cust} opened new {new_account}")
+        print("Account opened successfully:", new_account)
 
 def make_deposit(cust:Customer):
     """Interactively allow the Customer to make a deposit to one of their accounts."""
@@ -140,14 +145,28 @@ def card_charge(cust:Customer):
         print("Charge canceled. Please choose one of the cards available.")
     except ValueError as err:
         print(err)
-        print("Charge canceled. Please enter positive numbers.")
+        print("Charge canceled/denied. Please enter positive numbers, and remember to stay within your credit limit.")
     else:
         credit_card_upsert(card)
         logging.info(f"{cust} charged ${round(chg_amt, 2)} against card {card.acct_number}; new balance ${round(new_bal, 2)}")
         print("Charge successful!")
 
 def new_loan(cust:Customer):
-    pass
+    """Interactively opens a new Loan for the specified Customer."""
+    try:
+        starting_bal = float(input("How much do you need to take out? >> "))
+        num_years = int(input("How many years do you want to pay this off? >> "))
+        acct_num = randint(1000000000, 9999999999)
+        int_rate = random() * 4 + 1
+        loan = Loan(cust.cust_number, acct_num, starting_bal, int_rate, term=num_years)
+    except ValueError as err:
+        print(err)
+        print("Loan open canceled. Please enter positive numbers.")
+    else:
+        cust.open_loan(loan)
+        loan_upsert(loan)
+        logging.info(f"{cust} opened new {loan}")
+        print("Loan opened successfully!")
 
 def make_pmt(cust:Customer):
     pass
