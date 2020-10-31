@@ -31,11 +31,15 @@ def set_up_customer(first_name, last_name):
     return new_cust
 
 def load_accts(cust:Customer):
+    """Loads all accounts and services for the specified Customer."""
     cust.accounts = account_srch(cust_num=cust.cust_number)
     cust.services = credit_card_srch(cust_num=cust.cust_number)
-    cust.services.append(loan_srch(cust_num=cust.cust_number))
+    loans = loan_srch(cust_num=cust.cust_number)
+    if len(loans) > 0:
+        cust.services.append(loans)
 
 def view_accts(cust:Customer):
+    """Prints all of the specified Customer's accounts and services."""
     header = f"Accounts for {cust.first_name} {cust.last_name}:"
     header_deco = '=' * len(header)
     print(header_deco)
@@ -52,8 +56,10 @@ def view_accts(cust:Customer):
     else:
         for svc in cust.services:
             print(svc)
+    print(header_deco)
 
 def new_acct(cust:Customer):
+    """Interactively opens a new Account for the specified Customer."""
     print("Which type of account are you opening today?")
     response_type = ''
     while response_type not in ('c', 's'):
