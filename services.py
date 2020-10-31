@@ -65,10 +65,12 @@ class Service:
             the service balance after the withdrawal
         
         Raises:
-            ValueError: insufficient balance in the account
+            ValueError: insufficient balance in the account, or payment amount is not positive
         """
-        if amount < account.balance:
+        if amount > account.balance:
             raise ValueError("Insufficient funds in account for this payment")
+        if amount <= 0:
+            raise ValueError("Payment amount must be positive")
         if amount > self.balance:
             amount = self.balance
         account.withdraw(amount)

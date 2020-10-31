@@ -145,7 +145,8 @@ def card_charge(cust:Customer):
         print("Charge canceled. Please choose one of the cards available.")
     except ValueError as err:
         print(err)
-        print("Charge canceled/denied. Please enter positive numbers, and remember to stay within your credit limit.")
+        print("Charge canceled/denied. Please enter positive numbers,",
+              " and remember to stay within your credit limit.")
     else:
         credit_card_upsert(card)
         logging.info(f"{cust} charged ${round(chg_amt, 2)} against card {card.acct_number}; new balance ${round(new_bal, 2)}")
@@ -169,7 +170,44 @@ def new_loan(cust:Customer):
         print("Loan opened successfully!")
 
 def make_pmt(cust:Customer):
-    pass
+    """Interactively allows the specified Customer to make a payment toward any of their Services from any of their Accounts."""
+    svcs_enum = list(enumerate(cust.services))
+    accts_enum = list(enumerate(cust.accounts))
+    print("Which card/loan?")
+    for idx,svc in svcs_enum:
+        print(f"{idx}. {svc}")
+    try:
+        svc_choice = int(input(">> "))
+        svc = svcs_enum[svc_choice][1]
+        print("Which account will you be paying from?")
+        for idx,acct in accts_enum:
+            print(f"{idx}. {acct}")
+        acct_choice = int(input(">> "))
+        acct = accts_enum[acct_choice][1]
+        pay_amt = float(input("Finally, how much do you want to pay? >> "))
+        new_bal = svc.make_payment(pay_amt, acct)
+    except IndexError:
+        print("Payment canceled. Please choose from the accounts, cards, and/or loans available.")
+    except ValueError as err:
+        print(err)
+        print("Payment canceled/denied. Please enter positive numbers, and",
+              " ensure you have sufficient funds for the payment you wish to make.")
+    else:
+        svc_type = ""
+        if type(svc) == CreditCard:
+            credit_card_upsert(svc)
+            svc_type = "credit card"
+        elif type(svc) == Loan:
+            loan_upsert(svc)
+            svc_type = "loan"
+        else:
+            print("How did you get here?")
+            return
+        account_upsert(acct)
+        logging.info(f"{cust} made a {svc_type} payment of ${round(pay_amt, 2)}")
+        logging.info(f"  Source: {acct}")
+        logging.info(f"  Destination: {svc}")
+        print("Payment successful. Thank you!")
 
 logging.basicConfig(filename="transaction.log", level=logging.INFO, 
                     format="%(asctime)s %(message)s", datefmt="%m/%d/%Y %I:%M:%S %p")
