@@ -300,3 +300,11 @@ def loan_srch(acct_num = None, cust_num = None):
         result = conn.execute(stmt)
         return [Loan(row['owner'], row['acctnum'], row['balance'], row['intrate'], row['opendate'],
                     maturity_date=row['maturitydate'], monthly_pmt=row['monthlypmt']) for row in result]
+
+def load_accts(cust:Customer):
+    """Loads all accounts and services for the specified Customer."""
+    cust.accounts = account_srch(cust_num=cust.cust_number)
+    cust.services = credit_card_srch(cust_num=cust.cust_number)
+    loans = loan_srch(cust_num=cust.cust_number)
+    if len(loans) > 0:
+        cust.services.append(loans)

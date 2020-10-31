@@ -30,14 +30,6 @@ def set_up_customer(first_name, last_name):
     logging.info(f"Created new {new_cust}")
     return new_cust
 
-def load_accts(cust:Customer):
-    """Loads all accounts and services for the specified Customer."""
-    cust.accounts = account_srch(cust_num=cust.cust_number)
-    cust.services = credit_card_srch(cust_num=cust.cust_number)
-    loans = loan_srch(cust_num=cust.cust_number)
-    if len(loans) > 0:
-        cust.services.append(loans)
-
 def view_accts(cust:Customer):
     """Prints all of the specified Customer's accounts and services."""
     header = f"Accounts for {cust.first_name} {cust.last_name}:"
@@ -134,7 +126,25 @@ def new_card(cust:Customer):
     print("Credit card opened successfully:", card)
 
 def card_charge(cust:Customer):
-    pass
+    """Interactively allow the Customer to charge against one of their Cards."""
+    cards_enum = list(enumerate([svc for svc in cust.services if type(svc) == CreditCard]))
+    print("Which card?")
+    for idx,card in cards_enum:
+        print(f"{idx}. {card}")
+    try:
+        choice = int(input(">> "))
+        card = cards_enum[choice][1]
+        chg_amt = float(input("How much to charge? >> "))
+        new_bal = card.deposit(chg_amt)
+    except IndexError:
+        print("Charge canceled. Please choose one of the cards available.")
+    except ValueError as err:
+        print(err)
+        print("Charge canceled. Please enter positive numbers.")
+    else:
+        credit_card_upsert(card)
+        logging.info(f"{cust} charged ${round(chg_amt, 2)} against card {card.acct_number}; new balance ${round(new_bal, 2)}")
+        print("Charge successful!")
 
 def new_loan(cust:Customer):
     pass
