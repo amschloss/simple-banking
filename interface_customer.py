@@ -7,6 +7,7 @@
 
 from datalayer import *
 from random import randint, random
+import logging
 
 def set_up_customer(first_name, last_name):
     """
@@ -26,6 +27,7 @@ def set_up_customer(first_name, last_name):
     email = input("And finally, what is your email? ")
     new_cust = Customer(first_name, last_name, 999)
     new_cust.add_contact(addr, city, state, zipcode, email)
+    logging.info(f"Created new {new_cust}")
     return new_cust
 
 def load_accts(cust:Customer):
@@ -70,6 +72,7 @@ def new_acct(cust:Customer):
     new_account.deposit(starting_bal)
     cust.open_account(new_account)
     account_upsert(new_account)
+    logging.info(f"{cust} opened new {new_account}")
     print("Account opened successfully:", new_account)
 
 def make_deposit(cust:Customer):
@@ -85,6 +88,7 @@ def new_card(cust:Customer):
     card = CreditCard(cust.cust_number, acct_num, int_rate, cred_limit)
     cust.open_creditcard(card)
     credit_card_upsert(card)
+    logging.info(f"{cust} opened new {card}")
     print("Credit card opened successfully:", card)
 
 def card_charge(cust:Customer):
@@ -96,6 +100,8 @@ def new_loan(cust:Customer):
 def make_pmt(cust:Customer):
     pass
 
+logging.basicConfig(filename="transaction.log", level=logging.INFO, 
+                    format="%(asctime)s %(message)s", datefmt="%m/%d/%Y %I:%M:%S %p")
 fname = input("What is your first name? ")
 lname = input("What is your last name? ")
 cust = customer_srch(first_name=fname, last_name=lname)
