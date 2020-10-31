@@ -237,8 +237,8 @@ class Loan(Service):
         if term <= 0:
             raise ValueError("Loan term must be positive")
         super().__init__(owner, acct_number, balance, interest_rate, open_date=open_date)
-        self._maturity_date = maturity_date if maturity_date is None else self._advance_date(open_date, term)
-        self._monthly_pmt = monthly_pmt if monthly_pmt is None else self.calculate_amortization(term * 12)
+        self._maturity_date = maturity_date if maturity_date is not None else self._advance_date(open_date, term)
+        self._monthly_pmt = monthly_pmt if monthly_pmt is not None else self.calculate_amortization(term * 12)
 
     @property
     def maturity_date(self):
@@ -249,7 +249,10 @@ class Loan(Service):
         return self._monthly_pmt
 
     def __repr__(self):
-        return f'Loan nbr {self.acct_number} has balance ${self.balance} at {self.interest_rate}%, monthly payment ${self.monthly_payment}, matures on {self.maturity_date}'
+        repr_str = f'Loan nbr {self.acct_number} has balance ${round(self.balance, 2)}'
+        repr_str += f' at {round(self.interest_rate, 2)}%, '
+        repr_str += f'monthly payment ${round(self.monthly_payment, 2)}, matures on {self.maturity_date}'
+        return repr_str
     
     def calculate_amortization(self, num_pays: int):
         """
@@ -262,5 +265,5 @@ class Loan(Service):
             the monthly payment
         """
         r = self._interest_rate / 1200.0
-        mp = self._balance * r / (1 - (1 + r) ** num_pays)
+        mp = self._balance * (r + r / ((1 + r) ** num_pays - 1))
         return mp
