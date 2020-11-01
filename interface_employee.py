@@ -1,4 +1,5 @@
 from datalayer import *
+import logging
 
 def set_up_employee(first_name, last_name):
     """
@@ -28,21 +29,38 @@ def view_accts():
         print(header)
         print(header_deco)
         if len(cust.accounts) == 0:
-            print("No checking or savings accounts on file")
+            print("No accounts on file")
         else:
             for acct in cust.accounts:
                 print(acct)
             print(header_deco)
         if len(cust.services) == 0:
-            print("No credit cards or loans on file")
+            print("No services on file")
         else:
             for svc in cust.services:
                 print(svc)
     print('=' * 20)
 
 def run_month_end():
-    pass
-    
+    acct_ctr = 0
+    svc_ctr = 0
+    for cust in customers:
+        for acct in cust.accounts:
+            if acct.interest_rate > 0:
+                new_bal = acct.pay_interest()
+                account_upsert(acct)
+                logging.info(f"Interest paid on account {acct.acct_number}, new balance ${round(new_bal, 2)}")
+                acct_ctr += 1
+        for svc in cust.services:
+            if type(svc) == CreditCard:
+                new_bal = svc.charge_interest()
+                credit_card_upsert(svc)
+                logging.info(f"Interest charged on card {svc.acct_number}, new balance ${round(new_bal, 2)}")
+                svc_ctr += 1
+    print(f"Month end process complete. {acct_ctr} accounts and {svc_ctr} credit cards affected. See transaction log for details.")
+
+logging.basicConfig(filename="transaction.log", level=logging.INFO, 
+                    format="%(asctime)s %(message)s", datefmt="%m/%d/%Y %I:%M:%S %p")
 fname = input("What is your first name? ")
 lname = input("What is your last name? ")
 emp = employee_srch(first_name=fname, last_name=lname)
